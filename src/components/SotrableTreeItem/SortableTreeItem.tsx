@@ -1,7 +1,7 @@
 import { CSS } from "@dnd-kit/utilities"
 import { AnimateLayoutChanges, useSortable } from "@dnd-kit/sortable"
 import { CSSProperties, FC } from "react"
-import { FlattenedItem } from "../types"
+import { FlattenedItem } from "../SortableTree/types"
 import { RxDragHandleDots2 } from "react-icons/rx"
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri"
 type SortableTreeItemProps = {
