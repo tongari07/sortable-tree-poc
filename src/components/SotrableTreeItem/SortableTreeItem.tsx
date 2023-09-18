@@ -1,86 +1,75 @@
 import { CSS } from "@dnd-kit/utilities"
-import { AnimateLayoutChanges, useSortable } from "@dnd-kit/sortable"
-import { CSSProperties, FC } from "react"
+import { CSSProperties, FC, memo } from "react"
 import { FlattenedItem } from "../SortableTree/types"
 import { RxDragHandleDots2 } from "react-icons/rx"
 import { RiArrowDownSLine, RiArrowRightSLine } from "react-icons/ri"
+import { useSortableTree } from "../SortableTree/hooks/useSortableTree"
+
 type SortableTreeItemProps = {
   item: FlattenedItem
-  depth: number
-  onExpand?: () => void
-  expanded?: boolean
-  indentionWidth: number
-  clone?: boolean
-  childrenCount?: number
+  isClone?: boolean
 }
-
-// ドラッグ中はアニメーションを無効にする
-const animateLayoutChanges: AnimateLayoutChanges = ({
-  isSorting,
-  wasDragging,
-}) => (isSorting || wasDragging ? false : true)
 
 // Containerコンポーネント
-export const SortableTreeItem: FC<SortableTreeItemProps> = ({
-  item,
-  depth,
-  onExpand,
-  expanded,
-  indentionWidth,
-  clone,
-  childrenCount,
-}) => {
-  const {
-    isDragging,
-    setDroppableNodeRef,
-    setDraggableNodeRef,
-    transform,
-    transition,
-    attributes,
-    listeners,
-  } = useSortable({
-    id: item.id,
-    animateLayoutChanges,
-  })
-  const style: CSSProperties = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-  }
+export const SortableTreeItem: FC<SortableTreeItemProps> = memo(
+  ({ item, isClone }) => {
+    const {
+      isDragging,
+      setDroppableNodeRef,
+      setDraggableNodeRef,
+      transform,
+      transition,
+      attributes,
+      listeners,
+      onExpand,
+      depth,
+      indentionWidth,
+      isExpanded,
+      childrenCount,
+    } = useSortableTree(item.id)
 
-  return (
-    <li
-      ref={setDroppableNodeRef}
-      className={`w-full list-none py-1 ${clone && "absolute left-4 top-4"}`}
-      style={{
-        // ここでpaddingLeftを指定することで、子要素が親要素より右にずれる
-        paddingLeft: clone ? 0 : depth * indentionWidth,
-      }}
-    >
-      <div
-        ref={setDraggableNodeRef}
-        className={`flex items-center gap-4 bg-blue-400 p-2 ${
-          isDragging ? "opacity-50" : "opacity-100"
+    const style: CSSProperties = {
+      transform: CSS.Translate.toString(transform),
+      transition,
+    }
+
+    return (
+      <li
+        ref={setDroppableNodeRef}
+        className={`w-full list-none py-1 ${
+          isClone && "absolute left-4 top-4"
         }`}
-        style={style}
+        style={{
+          // ここでpaddingLeftを指定することで、子要素が親要素より右にずれる
+          paddingLeft: isClone ? 0 : depth * indentionWidth,
+        }}
       >
-        {clone ? (
-          <span className="flex h-4 w-4 items-center justify-center rounded-full bg-gray-50 text-xs font-bold text-blue-400">
-            {childrenCount}
-          </span>
-        ) : (
-          <button {...attributes} {...listeners}>
-            <RxDragHandleDots2 />
-          </button>
-        )}
-        <div className="flex gap-2">
-          {onExpand && (
-            <button onClick={onExpand}>
-              {expanded ? <RiArrowDownSLine /> : <RiArrowRightSLine />}
+        <div
+          ref={setDraggableNodeRef}
+          className={`flex items-center gap-4 bg-blue-400 p-2 ${
+            isDragging ? "opacity-50" : "opacity-100"
+          }`}
+          style={style}
+        >
+          {isClone ? (
+            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-gray-50 text-xs font-bold text-blue-400">
+              {childrenCount}
+            </span>
+          ) : (
+            <button {...attributes} {...listeners}>
+              <RxDragHandleDots2 />
             </button>
           )}
-          {item.name}
+          <div className="flex gap-2">
+            {childrenCount > 0 && onExpand && (
+              <button onClick={onExpand}>
+                {isExpanded ? <RiArrowDownSLine /> : <RiArrowRightSLine />}
+              </button>
+            )}
+            {item.name}
+          </div>
         </div>
-      </div>
-    </li>
-  )
-}
+      </li>
+    )
+  },
+)
